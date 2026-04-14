@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - BantayBuntot{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <!-- Header Section -->
+        <div class="login-header">
+            <div class="logo-section">
+                <h1 class="app-title" style="display: flex; flex-direction: column; align-items: center; gap: 1px; margin: 0;">
+                    <img src="{% static 'images/iicon.png' %}" alt="" style="height: 130px; width: auto;">
+                    <img src="{% static 'images/iiicon.png' %}" alt="" style="height: 180px; width: auto;">
+                </h1>
+                <p class="app-subtitle">Stray Animal Tracking & Reporting</p>
+            </div>
+        </div>
+
+        <!-- Role Toggle -->
+        <div class="role-toggle">
+            <div class="toggle-container">
+                <button type="button" class="toggle-btn active" data-role="user">User</button>
+                <button type="button" class="toggle-btn" data-role="rescuer">Rescuer</button>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div class="login-form">
+            <h2 class="form-title" id="form-title">User Login</h2>
+            <p class="form-description" id="form-description">Report and track stray animals in your community</p>
+            
+            <form method="post" id="login-form">
+                {% csrf_token %}
+                <!-- Hidden field for role selection -->
+                <input type="hidden" name="user_role" id="id_user_role" value="user">
+                <!-- CAPTCHA token -->
+                <input type="hidden" name="captcha_token" id="captcha_token">
+                
+                <div class="form-group">
+                    <label for="id_username">Email</label>
+                    <input type="email" name="username" id="id_username" placeholder="user@example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password">Password</label>
+                    <input type="password" name="password" id="id_password" required>
+                </div>
+                
+                {% if recaptcha_enabled %}
+                <!-- STRIDE: DoS/SPOOFING Protection - reCAPTCHA v2 Checkbox -->
+                <div class="form-group" style="display: flex; justify-content: center; margin: 15px 0;">
+                    <div id="recaptcha-container"></div>
+                </div>
+                {% endif %}
+                
+                <button type="submit" class="login-btn" id="login-btn">Login as User</button>
+                
+                <div class="divider">OR</div>
+                
+                <a href="{% url 'google_login' %}" class="google-login-btn">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                    Continue with Google
+                </a>
+                <p style="text-align: center; font-size: 12px; color: #94a3b8; margin-top: 10px;">
+                    Using Google? Please continue with Google instead of typing your email/password.
+                </p>
+            </form>
+            
+            <div class="form-footer">
+                <p><a href="{% url 'forgot_password' %}" id="forgot-password-link">Forgot Password?</a></p>
+                <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+            </div>
+            
+            {% if recaptcha_enabled %}
+            <!-- STRIDE: DoS/SPOOFING Protection - reCAPTCHA v3 Badge -->
+            <div class="recaptcha-badge" style="margin-top: 15px; font-size: 12px; color: #666; text-align: center;">
+                <p>🔒 Protected by Google reCAPTCHA v3</p>
+                <p><a href="https://policies.google.com/privacy" target="_blank">Privacy</a> - 
+                   <a href="https://policies.google.com/terms" target="_blank">Terms</a></p>
+            </div>
+            {% endif %}
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if recaptcha_enabled %}
+<!-- STRIDE: DoS/SPOOFING Protection - Google reCAPTCHA v2 -->
+<script>
+    // Track if reCAPTCHA is already rendered
+    window.recaptchaWidgetId = null;
+    
+    // Global callback function for reCAPTCHA - always renders fresh
+    function renderRecaptcha() {
+        var container = document.getElementById('recaptcha-container');
+        if (!container) return;
+        
+        // Check if already rendered (has iframe child)
+        if (container.querySelector('iframe')) {
+            return; // Already rendered, skip
+        }
+        
+        if (typeof grecaptcha !== 'undefined' && grecaptcha.render) {
+            // Render fresh widget
+            window.recaptchaWidgetId = grecaptcha.render('recaptcha-container', {
+                'sitekey': '{{ recaptcha_site_key }}'
+            });
+        }
+    }
+    
+    // Try to render when page loads
+    window.addEventListener('load', function() {
+        // Small delay to let reCAPTCHA script fully load
+        setTimeout(renderRecaptcha, 100);
+    });
+</script>
+<script src="https://www.google.com/recaptcha/api.js?onload=renderRecaptcha&render=explicit" async defer></script>
+{% endif %}
+<script src="{% static 'js/login.js' %}"></script>
+{% endblock %}

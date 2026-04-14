@@ -1,0 +1,179 @@
+{% extends 'admin_panel/layout.html' %}
+
+{% block page_title %}Global Reports{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-top: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <div>
+            <h3 style="font-weight: 700;">All Animal Reports</h3>
+            <p style="color: var(--text-muted); font-size: 14px;">Monitor status and moderate content</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <select id="statusFilter" style="padding: 10px 16px; border-radius: 12px; border: 1.5px solid var(--bg-body); font-size: 14px; background: white;">
+                <option value="all">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Animal</th>
+                    <th>Condition</th>
+                    <th>Status</th>
+                    <th>Reporter</th>
+                    <th>Location</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="reportsTableBody">
+                {% for report in reports %}
+                <tr data-status="{{ report.status }}">
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 32px; height: 32px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                                <i class="fas fa-{% if report.animal_type == 'dog' %}dog{% elif report.animal_type == 'cat' %}cat{% else %}paw{% endif %}"></i>
+                            </div>
+                            <span style="font-weight: 600; text-transform: capitalize;">{{ report.animal_type }}</span>
+                        </div>
+                    </td>
+                    <td><span style="font-size: 13px;">{{ report.animal_condition|capfirst }}</span></td>
+                    <td>
+                        <span class="badge badge-{{ report.status }}">
+                            {{ report.status|upper }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="font-size: 13px; font-weight: 500;">{{ report.reporter_name }}</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">{{ report.reporter_email|default:"Anonymous" }}</div>
+                    </td>
+                    <td style="max-width: 200px;">
+                        <span style="font-size: 12px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">
+                            {{ report.address }}
+                        </span>
+                    </td>
+                    <td style="font-size: 12px; color: var(--text-muted);">{{ report.created_at|slice:":10" }}</td>
+                    <td>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;" onclick="viewReportDetails('{{ report.id }}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline" style="padding: 6px 12px; font-size: 12px; border-color: var(--danger); color: var(--danger);" onclick="deleteReport('{{ report.id }}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No reports found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Simple Detail Modal -->
+<div id="adminDetailModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="card" style="width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="font-weight: 700;">Report Details</h3>
+            <button onclick="closeModal()" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+        </div>
+        <div id="modalContent">
+            <!-- Dynamic content -->
+        </div>
+        <div style="margin-top: 30px; display: flex; justify-content: flex-end;">
+            <button class="btn btn-primary" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function viewReportDetails(reportId) {
+        // Since we are doing a simplified adminCRUD, we can just show an alert or a simple modal
+        // In a real app, I'd fetch the detail or use the already loaded data.
+        const modal = document.getElementById('adminDetailModal');
+        const content = document.getElementById('modalContent');
+        
+        // Find report in local data (simplified)
+        const reports = {{ reports_json|safe }};
+        const report = reports.find(r => r.id === reportId);
+        
+        if (report) {
+            content.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+                    <div style="display: flex; gap: 15px;">
+                        <div style="flex: 1;">
+                            <div style="color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase;">Animal Details</div>
+                            <div style="font-size: 18px; font-weight: 700; margin-top: 4px; text-transform: capitalize;">${report.animal_type} (${report.animal_condition})</div>
+                        </div>
+                        <div style="flex: 1; text-align: right;">
+                             <div style="color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase;">Status</div>
+                             <span class="badge badge-${report.status}" style="margin-top: 4px;">${report.status.toUpperCase()}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase;">Description</div>
+                        <p style="margin-top: 8px; line-height: 1.6;">${report.description}</p>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase;">Address</div>
+                        <p style="margin-top: 8px; font-style: italic;">${report.address}</p>
+                    </div>
+                    ${report.image_url ? `
+                        <div>
+                            <img src="${report.image_url}" style="width: 100%; border-radius: 12px; max-height: 300px; object-fit: cover;">
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            modal.style.display = 'flex';
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('adminDetailModal').style.display = 'none';
+    }
+
+    async function deleteReport(reportId) {
+        if (!confirm('Are you sure you want to PERMANENTLY delete this report? This action cannot be undone.')) return;
+        
+        // Use the existing dashboard API for deletion if available, or build a new one.
+        // For simplicity, I'll assume I'm calling an admin-only deletion endpoint.
+        try {
+             // Mocking deletion - in real scenario, create specialized admin API
+             const response = await fetch(`/api/reports/${reportId}/delete/`, {
+                 method: 'DELETE',
+                 headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+             });
+             const result = await response.json();
+             if (result.success) {
+                 location.reload();
+             } else {
+                 alert('Error deleting report');
+             }
+        } catch (e) {
+            console.error('Delete failed:', e);
+        }
+    }
+
+    document.getElementById('statusFilter').addEventListener('change', function(e) {
+        const val = e.target.value;
+        const rows = document.querySelectorAll('#reportsTableBody tr');
+        rows.forEach(row => {
+            if (val === 'all') row.style.display = '';
+            else row.style.display = row.dataset.status === val ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}

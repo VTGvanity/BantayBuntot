@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Redirecting to Google...</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #f8fafc; margin: 0; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .text { color: #64748b; font-size: 18px; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div style="text-align: center;">
+        <div class="loader"></div>
+        <div class="text">Connecting to Google...</div>
+    </div>
+    <script>
+        const SUPABASE_URL = "{{ SUPABASE_URL }}";
+        const SUPABASE_ANON_KEY = "{{ SUPABASE_ANON_KEY }}";
+        const role = "{{ role }}";
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // This initiates the OAuth flow on the frontend, which is CRITICAL for PKCE.
+        // It saves the code_verifier in localStorage and redirects to Google.
+        // Redirect to the auth callback first so we can process the session
+        // and handle role assignment/verification logic.
+        const callbackUrl = window.location.origin + '/auth/callback/?role=' + role;
+        
+        supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: callbackUrl,
+                queryParams: {
+                    prompt: 'select_account'
+                }
+            }
+        });
+    </script>
+</body>
+</html>

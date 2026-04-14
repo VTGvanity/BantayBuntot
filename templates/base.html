@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BantayBuntot - Stray Animal Tracking & Reporting{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/rescuer-dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'libs/leaflet.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon-16x16.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}">
+    <link rel="manifest" href="{% static 'images/site.webmanifest' %}">
+</head>
+<body>
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <!-- Custom Alert Modal -->
+    <div id="customAlertModal" class="custom-modal" style="display: none; z-index: 10005 !important;">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h3 id="customAlertTitle">Notification</h3>
+                <button class="custom-modal-close" onclick="closeCustomAlert()">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                <p id="customAlertMessage">Message goes here</p>
+            </div>
+            <div class="custom-modal-footer">
+                <button class="custom-modal-btn primary" onclick="closeCustomAlert()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="customConfirmModal" class="custom-modal" style="display: none; z-index: 10005 !important;">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h3 id="customConfirmTitle">Confirm</h3>
+                <button class="custom-modal-close" onclick="closeCustomConfirm(false)">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                <p id="customConfirmMessage">Are you sure?</p>
+            </div>
+            <div class="custom-modal-footer">
+                <button class="custom-modal-btn secondary" onclick="closeCustomConfirm(false)">Cancel</button>
+                <button id="customConfirmOkBtn" class="custom-modal-btn danger" onclick="closeCustomConfirm(true)">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    {% block content %}
+    {% endblock %}
+    
+    <script src="{% static 'libs/leaflet.js' %}"></script>
+    <script src="{% static 'js/alerts_config.js' %}"></script>
+    {% block extra_js %}
+    {% endblock %}
+</body>
+</html>

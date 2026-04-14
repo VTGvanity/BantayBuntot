@@ -1,0 +1,2269 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Dashboard - BantayBuntot{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <h1 class="app-title" style="display: flex; align-items: center; gap: 8px; margin: 0;">
+                    <img src="{% static 'images/iicon.png' %}" alt="" style="height: 80px; width: 90px;">
+                    <img src="{% static 'images/iiicon.png' %}" alt="" style="height: 90px; width: 130px;">
+                </h1>
+            </div>
+            <div class="user-menu">
+                <!-- Mini Profile -->
+                <div class="mini-profile" id="miniProfile" onclick="openProfileModal()">
+                    <div class="mini-profile-avatar">
+                        <img id="miniProfilePhoto" src="" alt="Profile" style="display: none;">
+                        <div id="miniProfileInitials" class="profile-initials"></div>
+                    </div>
+                    <div class="mini-profile-info">
+                        <span class="mini-profile-name" id="miniProfileName">{{ username|default:"User" }}</span>
+                        <span class="mini-profile-bio" id="miniProfileBio"></span>
+                    </div>
+                </div>
+                <a href="{% url 'logout' %}" class="logout-btn">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <!-- Spotted Animal Section -->
+        <div class="spotted-section">
+            <div class="spotted-content">
+                <h2>Spotted a stray animal?</h2>
+                <p>Report it now to help rescuers locate and assist them</p>
+                <button class="report-btn" id="openModalBtn">
+                    Report Animal
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" data-tab="my-reports">
+                My Reports <span class="count">(0)</span>
+            </button>
+            <button class="tab-btn" data-tab="in-progress">
+                In Progress <span class="count">(0)</span>
+            </button>
+            <button class="tab-btn" data-tab="completed">
+                Completed <span class="count">(0)</span>
+            </button>
+            <button class="tab-btn" data-tab="all-reports">
+                All Reports <span class="count">(0)</span>
+            </button>
+            <button class="tab-btn" data-tab="map-view">
+                Map View
+            </button>
+            <button class="tab-btn" data-tab="trash-bin">
+                Trash Bin <span class="count" id="trashCount">(0)</span>
+            </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- My Reports Tab -->
+            <div class="tab-pane active" id="my-reports">
+                <div class="no-reports">
+                    <div class="no-reports-icon">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+                            <path
+                                d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"
+                                stroke="#FF8C00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <h3>No reports yet</h3>
+                    <p>Start by reporting a stray animal you've spotted</p>
+                    <button class="create-first-report-btn" id="openModalBtn2">
+                        Create First Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- All Reports Tab -->
+            <div class="tab-pane" id="all-reports">
+                <div class="no-reports">
+                    <div class="no-reports-icon">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+                            <path
+                                d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"
+                                stroke="#FF8C00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <h3>No reports yet</h3>
+                    <p>No stray animals have been reported in your area</p>
+                </div>
+            </div>
+
+            <!-- In Progress Tab -->
+            <div class="tab-pane" id="in-progress">
+                <div class="no-reports">
+                    <div class="no-reports-icon">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                stroke="#17a2b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <h3>No rescues in progress</h3>
+                    <p>Your active rescue requests will appear here</p>
+                </div>
+            </div>
+
+            <!-- Completed Tab -->
+            <div class="tab-pane" id="completed">
+                <div class="no-reports">
+                    <div class="no-reports-icon">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+                            <path
+                                d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+                                stroke="#28a745" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <h3>No completed rescues yet</h3>
+                    <p>Successfully rescued animals will appear here</p>
+                </div>
+            </div>
+
+            <!-- Map View Tab -->
+            <div class="tab-pane" id="map-view">
+                <div class="map-container">
+                    <div id="map"></div>
+                    <div class="map-controls">
+                        <button class="map-btn" id="getCurrentLocation">Get My Location</button>
+                        <button class="map-btn secondary" id="refreshReports">Refresh Reports</button>
+                    </div>
+                    <div id="geolocationStatus" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
+                </div>
+            </div>
+
+            <!-- Trash Bin Tab -->
+            <div class="tab-pane" id="trash-bin">
+                <div class="no-reports" id="emptyTrashMsg">
+                    <div class="no-reports-icon">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+                            <path
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <h3>Your trash bin is empty</h3>
+                    <p>Reports you delete will stay here for recovery</p>
+                </div>
+                <div id="trashReportsList" class="reports-grid" style="display: none; padding: 20px;">
+                    <!-- Trashed reports will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Report Animal Modal -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Report Animal</h2>
+            <button class="close-btn" id="closeModalBtn">&times;</button>
+        </div>
+
+        <!-- Modal Tabs -->
+        <div class="modal-tabs">
+            <button class="tab-btn active" data-tab="details">Details</button>
+            <button class="tab-btn" data-tab="photo">Photo</button>
+            <button class="tab-btn" data-tab="location">Location</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Details Tab -->
+            <div class="tab-pane active" id="details-tab">
+                <form class="report-form">
+                    <!-- Emergency Notice -->
+                    <div class="emergency-notice" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
+                        <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">
+                            <i class="fas fa-exclamation-triangle"></i> Emergency Notice
+                        </div>
+                        <div style="font-size: 14px; line-height: 1.5;">
+                            In case of <strong>animal cruelty</strong>, immediately call 
+                            <strong style="font-size: 16px;">911</strong> (National Emergency Hotline) or contact your local barangay officials or nearest police station.
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="animal-type">Animal Type</label>
+                        <select id="animal-type" name="animal_type">
+                            <option value="">Select animal type</option>
+                            <option value="dog">Dog</option>
+                            <option value="cat">Cat</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="animal-condition">Condition</label>
+                        <select id="animal-condition" name="animal_condition">
+                            <option value="">Select condition</option>
+                            <option value="healthy">Healthy</option>
+                            <option value="injured">Injured</option>
+                            <option value="sick">Sick</option>
+                            <option value="pregnant">Pregnant</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" rows="4"
+                            placeholder="Describe the animal, its behavior, and any immediate concerns..."></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Photo Tab -->
+            <div class="tab-pane" id="photo-tab">
+                <div class="photo-upload-section">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">
+                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 15V3M12 3L8 7M12 3L16 7" stroke="#FF8C00" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                                <path
+                                    d="M2 17L2.621 19.485C2.72915 19.9177 2.97717 20.3018 3.32611 20.5763C3.67505 20.8508 4.10424 20.9999 4.546 21H19.454C19.8958 20.9999 20.3249 20.8508 20.6739 20.5763C21.0228 20.3018 21.2709 19.9177 21.379 19.485L22 17"
+                                    stroke="#FF8C00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <h3>Upload Animal Photo</h3>
+                        <p>Click to browse or drag and drop</p>
+                        <p class="upload-hint">PNG, JPG up to 10MB (multiple photos allowed)</p>
+                        <input type="file" id="photoInput" accept="image/*" multiple style="display: none;">
+                        <button class="browse-btn" id="browseBtn">Browse Files</button>
+                    </div>
+
+                    <div class="uploaded-photos" id="uploadedPhotos" style="display: none;">
+                        <h4>Uploaded Photos</h4>
+                        <div class="photo-grid" id="photoGrid">
+                            <!-- Photos will be added here dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location Tab -->
+            <div class="tab-pane" id="location-tab" style="max-height: 70vh; overflow: hidden;">
+                <div class="location-layout"
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; height: 100%;">
+                    <!-- Left: Map -->
+                    <div class="map-section">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Pin Location on Map</label>
+                        <div class="modal-map-container" id="modalMapContainer"
+                            style="height: 280px; border-radius: 8px; border: 1px solid #ddd;"></div>
+                        <div class="modal-map-controls" style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button type="button" class="map-btn" id="modalGetLocationBtn"
+                                style="flex: 1; padding: 8px 12px; background: #FF8C00; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">
+                                Get My Location
+                            </button>
+                            <button type="button" class="map-btn" id="modalPinLocationBtn"
+                                style="flex: 1; padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">
+                                Pin My Location
+                            </button>
+                        </div>
+                        <div id="modalGeolocationStatus"
+                            style="font-size: 11px; color: #666; margin-top: 8px; min-height: 16px;"></div>
+                    </div>
+
+                    <!-- Right: Form Inputs -->
+                    <div class="form-section" style="display: flex; flex-direction: column; gap: 12px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="address"
+                                style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Address</label>
+                            <input type="text" id="address" name="address" placeholder="Enter the location"
+                                style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                        </div>
+
+                        <div class="form-group" style="margin: 0;">
+                            <label for="landmark"
+                                style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Nearby
+                                Barangays or Animal Shelters</label>
+                            <input type="text" id="landmark" name="landmark"
+                                placeholder="e.g., Barangay Real, PAWS Shelter"
+                                style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                        </div>
+
+                        <div class="form-group" style="margin: 0;">
+                            <label for="additional-info"
+                                style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Additional
+                                Info</label>
+                            <textarea id="additional-info" name="additional_info" rows="3"
+                                placeholder="Any additional details..."
+                                style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; resize: none;"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer">
+            <button class="cancel-btn" id="cancelBtn">Cancel</button>
+            <button class="submit-btn" id="submitBtn">Submit Report</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.currentUserContext = {
+        id: "{{ user_id|escapejs }}",
+        username: "{{ request.user.username|escapejs }}",
+        email: "{{ request.user.email|escapejs }}",
+        full_name: "{{ request.user.full_name|escapejs }}"
+    };
+</script>
+<script src="{% static 'js/dashboard.js' %}"></script>
+
+
+<!-- Report Detail Modal -->
+<div id="reportDetailModal" class="report-detail-modal" style="display: none;">
+    <div class="report-detail-content">
+        <div class="report-detail-header">
+            <h3 id="reportDetailTitle">My Report</h3>
+            <button class="report-detail-close" onclick="closeReportDetailModal()">&times;</button>
+        </div>
+        <div class="report-detail-body">
+            <!-- Image Gallery -->
+            <div class="report-detail-image-container" id="reportDetailImageContainer">
+                <!-- Carousel for multiple images -->
+                <div id="reportDetailImageCarousel" style="display: none; width: 100%; height: 100%; position: relative;">
+                    <div id="reportDetailCarouselImages" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                        <!-- Images will be added here dynamically -->
+                    </div>
+                    <!-- Navigation Arrows -->
+                    <button id="reportDetailPrevBtn" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; z-index: 10;" onclick="prevReportImage()">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button id="reportDetailNextBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; z-index: 10;" onclick="nextReportImage()">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <!-- Image Counter -->
+                    <div id="reportDetailImageCounter" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; z-index: 10;">
+                        1 / 3
+                    </div>
+                </div>
+                <!-- Single Image Display -->
+                <img id="reportDetailImage" src="" alt="Animal photo" style="display: none;">
+                <div id="reportDetailNoImage" class="no-image-placeholder">No photo available</div>
+            </div>
+
+            <!-- Small Emergency Notice -->
+            <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 8px 12px; margin-bottom: 15px; font-size: 12px; color: #856404; text-align: center;">
+                <i class="fas fa-exclamation-triangle"></i> Animal cruelty? Call <strong>911</strong> or contact local barangay/police
+            </div>
+
+            <div class="report-detail-info">
+                <div class="detail-row">
+                    <span class="detail-label">Animal Type:</span>
+                    <span id="reportDetailAnimalType" class="detail-value"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Condition:</span>
+                    <span id="reportDetailCondition" class="detail-value"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <span id="reportDetailStatus" class="detail-value status-badge"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Reported:</span>
+                    <span id="reportDetailDate" class="detail-value"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Reporter:</span>
+                    <span id="reportDetailReporter" class="detail-value"></span>
+                </div>
+                <div class="detail-row full-width">
+                    <span class="detail-label">Description:</span>
+                    <p id="reportDetailDescription" class="detail-value description-text"></p>
+                </div>
+                <div class="detail-row full-width">
+                    <span class="detail-label">Location:</span>
+                    <p id="reportDetailAddress" class="detail-value address-text"></p>
+                </div>
+                <div class="detail-row full-width" id="reportDetailLandmarkRow">
+                    <span class="detail-label">Landmark:</span>
+                    <p id="reportDetailLandmark" class="detail-value landmark-text"></p>
+                </div>
+            </div>
+
+            <!-- Proof of Rescue Block -->
+            <div id="reportDetailProofSection"
+                style="display: none; margin-top: 25px; padding-top: 25px; border-top: 2px dashed #eee;">
+                <h4 style="margin: 0 0 15px 0; color: #28a745; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-check-circle"></i> Proof of Rescue
+                </h4>
+                <!-- Proof Carousel -->
+                <div id="reportDetailProofCarousel" style="display: none; width: 100%; height: 300px; position: relative; margin-bottom: 15px; border: 2px solid #28a745; border-radius: 8px; overflow: hidden;">
+                    <div id="reportDetailProofCarouselImages" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                        <!-- Proof images will be added here dynamically -->
+                    </div>
+                    <!-- Navigation Arrows -->
+                    <button id="reportDetailProofPrevBtn" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; z-index: 10;" onclick="prevProofImage()">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button id="reportDetailProofNextBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; z-index: 10;" onclick="nextProofImage()">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <!-- Image Counter -->
+                    <div id="reportDetailProofImageCounter" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; z-index: 10;">
+                        1 / 3
+                    </div>
+                </div>
+                <!-- Single Proof Image Display -->
+                <div class="report-detail-image-container" id="reportDetailProofImageContainer"
+                    style="max-height: 400px; margin-bottom: 15px; border: 2px solid #28a745; border-radius: 8px; overflow: hidden; display: none;">
+                    <img id="reportDetailProofImage" src="" alt="Proof photo"
+                        style="display: none; width: 100%; height: auto; max-height: 400px; object-fit: contain;">
+                </div>
+                <div class="detail-row full-width">
+                    <span class="detail-label" style="color: #28a745;">Safely Placed At:</span>
+                    <p id="reportDetailProofAddress" class="detail-value address-text" style="font-weight: 500;"></p>
+                </div>
+            </div>
+
+            <!-- Chat Section -->
+            <div id="reportDetailChatSection" style="display: none; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                <h4 style="margin: 0 0 15px 0; color: #FF8C00; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-comments"></i> Communication with Rescuer
+                </h4>
+                <div id="chatMessagesContainer" style="height: 300px; overflow-y: auto; background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; border: 1px solid #e9ecef;">
+                    <!-- Messages will be loaded here -->
+                    <div style="text-align: center; color: #999; font-size: 13px; margin-top: 20px;">
+                        Loading messages...
+                    </div>
+                </div>
+                <div class="chat-input-group" style="display: flex; gap: 10px;">
+                    <input type="text" id="chatMessageInput" placeholder="Type a message..." style="flex: 1; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 10px; font-size: 14px; outline: none; transition: border-color 0.3s ease;">
+                    <button id="sendChatMessageBtn" class="custom-modal-btn primary" style="padding: 10px 20px;">
+                        <i class="fas fa-paper-plane"></i> Send
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="report-detail-footer" id="reportDetailFooter">
+            <button class="custom-modal-btn secondary" onclick="closeReportDetailModal()">Close</button>
+            <button id="reportDetailDeleteBtn" class="custom-modal-btn danger">Delete Report</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modals moved to base.html -->
+
+
+
+<!-- Profile Modal -->
+<div id="profileModal" class="profile-modal" style="display: none;">
+    <div class="profile-modal-content">
+        <div class="profile-modal-header">
+            <h3>My Profile</h3>
+            <button class="report-detail-close" onclick="closeProfileModal()">&times;</button>
+        </div>
+        <div class="profile-modal-body">
+            <!-- Profile Photo Section -->
+            <div class="profile-section">
+                <div class="profile-photo-section">
+                    <div class="profile-photo-large">
+                        <img id="profilePhotoLarge" src="" alt="Profile" style="display: none;">
+                        <div id="profileInitialsLarge" class="initials-large"></div>
+                    </div>
+                    <div class="profile-photo-upload">
+                        <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;">
+                        <button class="custom-modal-btn secondary"
+                            onclick="document.getElementById('profilePhotoInput').click()">Change Photo</button>
+                        <button class="custom-modal-btn danger" onclick="removeProfilePhoto()">Remove</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Info Section -->
+            <div class="profile-section">
+                <div class="profile-section-title">Profile Information</div>
+                <div class="profile-form-group">
+                    <label for="profileUsername">Username</label>
+                    <input type="text" id="profileUsername">
+                </div>
+                <div class="profile-form-group">
+                    <label for="profileFullName">Full Name</label>
+                    <input type="text" id="profileFullName" placeholder="Enter your full name">
+                </div>
+                <div class="profile-form-group">
+                    <label for="profileBio">Bio</label>
+                    <textarea id="profileBio" placeholder="Tell us about yourself..."></textarea>
+                </div>
+                <div class="profile-form-group">
+                    <label for="profilePhone">Contact Number</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span
+                            style="background: #f0f0f0; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-weight: 600;">+63</span>
+                        <input type="tel" id="profilePhone" pattern="[0-9]{10}" maxlength="10" style="flex: 1;"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Rating Section (Reporter) -->
+            <div class="profile-section">
+                <div class="profile-section-title">My Rating</div>
+                <div id="reporterProfileRatingBox" style="background: linear-gradient(135deg, #FF8C00 0%, #e67e00 100%); color: white; padding: 18px 20px; border-radius: 15px; text-align: center; margin-bottom: 10px;">
+                    <div id="reporterProfileRatingStars" style="font-size: 22px; letter-spacing: 4px; margin-bottom: 4px;">&#9734;&#9734;&#9734;&#9734;&#9734;</div>
+                    <div id="reporterProfileRatingValue" style="font-size: 26px; font-weight: 700;">&mdash;</div>
+                    <div id="reporterProfileRatingLabel" style="font-size: 13px; opacity: 0.9;">No ratings yet (as Reporter)</div>
+                </div>
+            </div>
+
+            <!-- Rescue History Section -->
+            <div class="profile-section">
+                <div class="profile-section-title">Successful Rescue History</div>
+                <div class="profile-rescue-count">
+                    <span class="count-number" id="rescueCount">0</span>
+                    <span class="count-label">Successful Rescues</span>
+                </div>
+                <div id="rescueHistoryList" style="margin-top: 15px;">
+                    <!-- Rescue history items will be loaded here -->
+                </div>
+            </div>
+
+
+        </div>
+        <div class="profile-modal-footer">
+
+            <button class="custom-modal-btn secondary" onclick="closeProfileModal()">Cancel</button>
+            <button class="custom-modal-btn primary" onclick="saveProfile()">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<!-- Public Profile Modal -->
+<div id="publicProfileModal" class="profile-modal" style="display: none;">
+    <div class="profile-modal-content">
+        <div class="profile-modal-header">
+            <h3>User Profile</h3>
+            <button class="report-detail-close" onclick="closePublicProfileModal()">&times;</button>
+        </div>
+        <div class="profile-modal-body">
+            <div class="profile-section">
+                <div class="profile-photo-section">
+                    <div class="profile-photo-large">
+                        <img id="publicProfilePhotoLarge" src="" alt="Profile" style="display: none;">
+                        <div id="publicProfileInitialsLarge" class="initials-large"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-section">
+                <div class="profile-form-group">
+                    <label>Username</label>
+                    <div id="publicProfileUsername" style="font-weight: 600; font-size: 16px; color: #2c3e50;"></div>
+                </div>
+                <div class="profile-form-group">
+                    <label>Full Name</label>
+                    <div id="publicProfileFullName" style="font-size: 15px; color: #495057;"></div>
+                </div>
+                <div class="profile-form-group">
+                    <label>Bio</label>
+                    <div id="publicProfileBio" style="font-style: italic; color: #6c757d; margin-top: 5px;"></div>
+                </div>
+                <div class="profile-form-group">
+                    <label>Contact Number</label>
+                    <div id="publicProfilePhone" style="font-size: 15px; color: #495057; font-weight: 500;"></div>
+                </div>
+                <div class="profile-form-group" id="publicProfileRatingGroup">
+                    <label>Rating</label>
+                    <div id="publicProfileRatingDisplay" style="display: flex; align-items: center; gap: 10px;">
+                        <span id="publicProfileRatingStars" style="font-size: 20px; color: #FF8C00; letter-spacing: 2px;">&#9734;&#9734;&#9734;&#9734;&#9734;</span>
+                        <span id="publicProfileRatingText" style="font-size: 14px; color: #6c757d;">No ratings yet</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="profile-modal-footer">
+            <button class="custom-modal-btn secondary" onclick="closePublicProfileModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+
+<style>
+    .leaflet-pane,
+    .leaflet-control {
+        z-index: 400;
+    }
+
+    /* Fix Leaflet default marker images */
+    .leaflet-default-icon-path {
+        background-image: url('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png');
+    }
+
+    .leaflet-marker-icon {
+        background-image: url('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png');
+    }
+
+    .leaflet-marker-shadow {
+        background-image: url('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png');
+    }
+
+    /* Custom Modal Styles */
+    .custom-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(4px);
+    }
+
+    .custom-modal.active {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .custom-modal-content {
+        background: white;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 450px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease;
+        overflow: hidden;
+    }
+
+    .custom-modal-header {
+        background: linear-gradient(135deg, #FF8C00 0%, #e67e00 100%);
+        color: white;
+        padding: 20px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .custom-modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .custom-modal-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background 0.3s ease;
+    }
+
+    .custom-modal-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-modal-body {
+        padding: 25px;
+    }
+
+    .custom-modal-body p {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    .custom-modal-footer {
+        padding: 20px 25px;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .custom-modal-btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .custom-modal-btn.primary {
+        background: #FF8C00;
+        color: white;
+    }
+
+    .custom-modal-btn.primary:hover {
+        background: #e67e00;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 140, 0, 0.4);
+    }
+
+    .custom-modal-btn.secondary {
+        background: #f8f9fa;
+        color: #6c757d;
+    }
+
+    .custom-modal-btn.secondary:hover {
+        background: #e9ecef;
+    }
+
+    .custom-modal-btn.danger {
+        background: #dc3545;
+        color: white;
+    }
+
+    .custom-modal-btn.danger:hover {
+        background: #c82333;
+    }
+
+    /* Report Detail Modal Styles */
+    .report-detail-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 6000;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(4px);
+    }
+
+    .report-detail-modal.active {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .report-detail-content {
+        background: white;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease;
+    }
+
+    .report-detail-header {
+        background: linear-gradient(135deg, #FF8C00 0%, #e67e00 100%);
+        color: white;
+        padding: 20px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .report-detail-header h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    .report-detail-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background 0.3s ease;
+    }
+
+    .report-detail-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .report-detail-body {
+        padding: 25px;
+    }
+
+    .report-detail-image-container {
+        width: 100%;
+        height: 400px;
+        /* Increased height as requested for 'whole picture' */
+        background: #212529;
+        /* Dark background for letterboxing */
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 25px;
+        overflow: hidden;
+    }
+
+    .report-detail-image-container img {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+    }
+
+    .no-image-placeholder {
+        color: #6c757d;
+        font-size: 16px;
+    }
+
+    .report-detail-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .detail-row {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .detail-row.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .detail-label {
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .detail-value {
+        font-size: 15px;
+        color: #2c3e50;
+        font-weight: 500;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: capitalize;
+        width: fit-content;
+    }
+
+    .description-text,
+    .address-text,
+    .landmark-text {
+        line-height: 1.6;
+        margin: 0;
+        color: #495057;
+    }
+
+    .report-detail-footer {
+        padding: 20px 25px;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        border-top: 1px solid #f0f0f0;
+        background: #f8f9fa;
+        border-radius: 0 0 20px 20px;
+    }
+
+    /* Mini Profile Styles */
+    .mini-profile {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 16px;
+        background: white;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .mini-profile:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-1px);
+    }
+
+    .mini-profile-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: linear-gradient(135deg, #FF8C00 0%, #e67e00 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mini-profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .profile-initials {
+        color: white;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .mini-profile-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .mini-profile-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: #2c3e50;
+    }
+
+    .mini-profile-bio {
+        font-size: 12px;
+        color: #6c757d;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Profile Modal Styles */
+    .profile-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 5000;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(4px);
+    }
+    #publicProfileModal {
+        z-index: 7000;
+    }
+
+    .profile-modal.active {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .profile-modal-content {
+        background: white;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 85vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease;
+    }
+
+    .profile-modal-header {
+        background: linear-gradient(135deg, #FF8C00 0%, #e67e00 100%);
+        color: white;
+        padding: 20px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .profile-modal-header h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    .profile-modal-body {
+        padding: 30px;
+    }
+
+    .profile-section {
+        margin-bottom: 30px;
+    }
+
+    .profile-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .profile-section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #FF8C00;
+    }
+
+    .profile-photo-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .profile-photo-large {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: linear-gradient(135deg, #FF8C00 0%, #e67e00 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+    }
+
+    .profile-photo-large img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .profile-photo-large .initials-large {
+        color: white;
+        font-weight: 700;
+        font-size: 36px;
+    }
+
+    .profile-photo-upload {
+        display: flex;
+        gap: 10px;
+    }
+
+    .profile-form-group {
+        margin-bottom: 20px;
+    }
+
+    .profile-form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #2c3e50;
+        font-size: 14px;
+    }
+
+    .profile-form-group input,
+    .profile-form-group textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 15px;
+        transition: border-color 0.3s ease;
+    }
+
+    .profile-form-group input:focus,
+    .profile-form-group textarea:focus {
+        outline: none;
+        border-color: #FF8C00;
+    }
+
+    .profile-form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .profile-rescue-count {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+    }
+
+    .profile-rescue-count .count-number {
+        font-size: 36px;
+        font-weight: 700;
+        display: block;
+    }
+
+    .profile-rescue-count .count-label {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+    .profile-modal-footer {
+        padding: 20px 25px;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        border-top: 1px solid #f0f0f0;
+        background: #f8f9fa;
+        border-radius: 0 0 20px 20px;
+    }
+
+
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .mini-profile-bio {
+            display: none;
+        }
+
+        .mini-profile {
+            padding: 6px 12px;
+        }
+
+        .profile-modal-content {
+            width: 95%;
+            max-height: 90vh;
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .report-detail-info {
+            grid-template-columns: 1fr;
+        }
+
+        .report-detail-image-container {
+            height: 200px;
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<!-- Rate Rescuer Modal -->
+<div id="rateRescuerModal" class="custom-modal" style="display: none;">
+    <div class="custom-modal-content" style="max-width: 500px;">
+        <div class="custom-modal-header">
+            <h3>Rate Rescuer & Complete</h3>
+            <button class="custom-modal-close" onclick="closeRateRescuerModal()">&times;</button>
+        </div>
+        <div class="custom-modal-body">
+            <p style="margin-bottom: 20px; color: #666; font-size: 14px;">Please rate the rescuer's proof and execution before completing this report.</p>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50;">Rating <span style="color: #e74c3c;">*</span> <small style="color: #6c757d; font-weight: normal;">(required)</small></label>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px; font-size: 24px; color: #ddd; cursor: pointer;" id="userRatingStars">
+                    <i class="fas fa-star" data-rating="1" onclick="setUserToRescuerRating(1)"></i>
+                    <i class="fas fa-star" data-rating="2" onclick="setUserToRescuerRating(2)"></i>
+                    <i class="fas fa-star" data-rating="3" onclick="setUserToRescuerRating(3)"></i>
+                    <i class="fas fa-star" data-rating="4" onclick="setUserToRescuerRating(4)"></i>
+                    <i class="fas fa-star" data-rating="5" onclick="setUserToRescuerRating(5)"></i>
+                </div>
+                <p id="userRatingError" style="color: #e74c3c; font-size: 13px; margin: 0 0 8px; display: none;">&#9888; Please select a star rating before submitting.</p>
+                <input type="hidden" id="userToRescuerRatingValue" value="0">
+                <textarea id="userToRescuerFeedback" placeholder="Optional feedback about the rescuer's work..." style="width: 100%; padding: 10px 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; min-height: 80px; resize: vertical;"></textarea>
+            </div>
+        </div>
+        <div class="custom-modal-footer">
+            <button class="custom-modal-btn secondary" onclick="closeRateRescuerModal()">Cancel</button>
+            <button id="submitRatingBtn" class="custom-modal-btn primary" onclick="submitRescuerRating()">Submit & Approve</button>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/auth_utils.js' %}"></script>
+<script>
+    // Get CSRF Cookie function
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Global Custom Modal functions moved to alerts_config.js
+
+    // Public Profile Modal Functions
+    window.openPublicProfileModal = async function(identifier) {
+        if (!identifier) return;
+
+        let queryParam = '';
+        if (typeof identifier === 'object' && identifier.user_id) {
+            queryParam = `user_id=${encodeURIComponent(identifier.user_id)}`;
+        } else if (typeof identifier === 'string') {
+            queryParam = `email=${encodeURIComponent(identifier)}`;
+        } else {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/profile/public/?${queryParam}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                const profile = result.profile;
+                document.getElementById('publicProfileUsername').textContent = profile.username || 'Unknown';
+                document.getElementById('publicProfileFullName').textContent = profile.full_name || 'No name provided';
+                document.getElementById('publicProfileBio').textContent = profile.bio || 'No bio available';
+
+                const phoneEl = document.getElementById('publicProfilePhone');
+                if (phoneEl) {
+                    let displayPhone = 'No contact number provided';
+                    if (profile.phone) {
+                        if (profile.phone.startsWith('+63')) {
+                            displayPhone = profile.phone;
+                        } else if (profile.phone.startsWith('09')) {
+                            displayPhone = '+63' + profile.phone.substring(1);
+                        } else if (profile.phone.length === 10) {
+                            displayPhone = '+63' + profile.phone;
+                        } else {
+                            displayPhone = profile.phone;
+                        }
+                    }
+                    phoneEl.textContent = displayPhone;
+                }
+
+                // Show rating on public profile
+                const ratingStarsEl = document.getElementById('publicProfileRatingStars');
+                const ratingTextEl = document.getElementById('publicProfileRatingText');
+                if (ratingStarsEl && ratingTextEl) {
+                    const isRescuer = profile.user_type === 'rescuer';
+                    const avg = isRescuer ? profile.avg_rating_as_rescuer : profile.avg_rating_as_reporter;
+                    const count = isRescuer ? (profile.rating_count_as_rescuer || 0) : (profile.rating_count_as_reporter || 0);
+                    const roleLabel = isRescuer ? 'as Rescuer' : 'as Reporter';
+                    if (avg && count > 0) {
+                        const filled = Math.round(avg);
+                        ratingStarsEl.textContent = '\u2605'.repeat(filled) + '\u2606'.repeat(5 - filled);
+                        ratingTextEl.textContent = `${avg}/5 (${count} review${count !== 1 ? 's' : ''}) ${roleLabel}`;
+                    } else {
+                        ratingStarsEl.textContent = '\u2606\u2606\u2606\u2606\u2606';
+                        ratingTextEl.textContent = `No ratings yet (${roleLabel})`;
+                    }
+                }
+
+                const photoLarge = document.getElementById('publicProfilePhotoLarge');
+                const initialsLarge = document.getElementById('publicProfileInitialsLarge');
+
+                if (profile.profile_photo) {
+                    photoLarge.src = profile.profile_photo;
+                    photoLarge.style.display = 'block';
+                    initialsLarge.style.display = 'none';
+                } else {
+                    photoLarge.style.display = 'none';
+                    initialsLarge.style.display = 'flex';
+                    const nameStr = profile.full_name || profile.username || 'U';
+                    initialsLarge.textContent = nameStr.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                }
+
+                const modal = document.getElementById('publicProfileModal');
+                modal.style.display = 'flex';
+                modal.classList.add('active');
+            } else {
+                showCustomAlert('Could not load user profile: ' + result.error, 'Error');
+            }
+        } catch (error) {
+            console.error('Error loading public profile:', error);
+            showCustomAlert('Could not load user profile', 'Error');
+        }
+    }
+
+    function closePublicProfileModal() {
+        const modal = document.getElementById('publicProfileModal');
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+    }
+
+    // Close modals on backdrop click
+    document.getElementById('publicProfileModal').addEventListener('click', function (e) {
+        if (e.target === this) closePublicProfileModal();
+    });
+
+    // Close modals on backdrop click
+    // Modal backdrop listeners moved to base.html/centralized
+
+    // Report Detail Modal Functions
+    let chatPollingInterval = null;
+    let currentChatReportId = null;
+
+    // Carousel state for report images
+    let currentReportImages = [];
+    let currentReportImageIndex = 0;
+
+    function updateReportCarousel() {
+        const carouselImages = document.getElementById('reportDetailCarouselImages');
+        const counter = document.getElementById('reportDetailImageCounter');
+        const prevBtn = document.getElementById('reportDetailPrevBtn');
+        const nextBtn = document.getElementById('reportDetailNextBtn');
+        
+        if (carouselImages && currentReportImages.length > 0) {
+            carouselImages.innerHTML = `<img src="${currentReportImages[currentReportImageIndex]}" alt="Animal photo ${currentReportImageIndex + 1}" style="max-width: 100%; max-height: 100%; object-fit: contain; cursor: pointer;" onclick="window.open('${currentReportImages[currentReportImageIndex]}', '_blank')">`;
+        }
+        
+        if (counter) {
+            counter.textContent = `${currentReportImageIndex + 1} / ${currentReportImages.length}`;
+        }
+        
+        // Show/hide nav buttons based on position
+        if (prevBtn) prevBtn.style.display = currentReportImageIndex > 0 ? 'flex' : 'none';
+        if (nextBtn) nextBtn.style.display = currentReportImageIndex < currentReportImages.length - 1 ? 'flex' : 'none';
+    }
+
+    window.prevReportImage = function() {
+        if (currentReportImageIndex > 0) {
+            currentReportImageIndex--;
+            updateReportCarousel();
+        }
+    };
+
+    window.nextReportImage = function() {
+        if (currentReportImageIndex < currentReportImages.length - 1) {
+            currentReportImageIndex++;
+            updateReportCarousel();
+        }
+    };
+
+    window.openReportDetailModal = function(report, fromHistory = false) {
+        try {
+            console.log("Opening report detail modal", report.id, "Status:", report.status, "FromHistory:", fromHistory);
+            const modal = document.getElementById('reportDetailModal');
+            if (!modal) return;
+
+            // Stop any existing polling
+            if (chatPollingInterval) {
+                clearInterval(chatPollingInterval);
+                chatPollingInterval = null;
+            }
+
+            const userCtx = (typeof currentProfile !== 'undefined' && currentProfile) ? currentProfile : (window.currentUserContext || { id: null });
+            const isMyReport = userCtx && report.user_id === userCtx.id;
+
+            // 1. Basic Information (Always populated)
+            // Set images - handle both single image and carousel
+            const imageEl = document.getElementById('reportDetailImage');
+            const imageCarousel = document.getElementById('reportDetailImageCarousel');
+            const noImageEl = document.getElementById('reportDetailNoImage');
+            
+            // Get all images (prefer 'images' array, fallback to 'image_url')
+            currentReportImages = report.images && report.images.length > 0 
+                ? report.images 
+                : (report.image_url ? [report.image_url] : []);
+            currentReportImageIndex = 0;
+            
+            if (currentReportImages.length > 0) {
+                if (noImageEl) noImageEl.style.display = 'none';
+                
+                if (currentReportImages.length === 1) {
+                    // Single image - use the simple image display
+                    if (imageEl) {
+                        imageEl.src = currentReportImages[0];
+                        imageEl.style.display = 'block';
+                    }
+                    if (imageCarousel) imageCarousel.style.display = 'none';
+                } else {
+                    // Multiple images - use carousel
+                    if (imageEl) imageEl.style.display = 'none';
+                    if (imageCarousel) {
+                        imageCarousel.style.display = 'block';
+                        updateReportCarousel();
+                    }
+                }
+            } else {
+                // No images
+                if (imageEl) imageEl.style.display = 'none';
+                if (imageCarousel) imageCarousel.style.display = 'none';
+                if (noImageEl) noImageEl.style.display = 'flex';
+            }
+
+            const animalTypeEl = document.getElementById('reportDetailAnimalType');
+            if (animalTypeEl) animalTypeEl.textContent = report.animal_type || 'Unknown';
+            const conditionEl = document.getElementById('reportDetailCondition');
+            if (conditionEl) conditionEl.textContent = report.animal_condition || 'Unknown';
+
+            const statusEl = document.getElementById('reportDetailStatus');
+            if (statusEl) {
+                const displayStatus = report.status === 'rescuer_declined' ? 'pending' : (report.status || 'pending');
+                statusEl.textContent = displayStatus;
+                statusEl.style.backgroundColor = getStatusColor(displayStatus);
+                statusEl.style.color = '#fff';
+            }
+
+            const dateEl = document.getElementById('reportDetailDate');
+            if (dateEl) dateEl.textContent = new Date(report.created_at).toLocaleString();
+            
+            const reporterEl = document.getElementById('reportDetailReporter');
+            if (reporterEl) {
+                reporterEl.innerHTML = report.reporter_email ? `<a href="javascript:void(0)" onclick="openPublicProfileModal('${report.reporter_email}')" style="color: #FF8C00; text-decoration: none; font-weight: 500; border-bottom: 1px dotted #FF8C00;">${report.reporter_name || 'Anonymous'}</a>` : (report.reporter_name || 'Anonymous');
+            }
+            
+            const descEl = document.getElementById('reportDetailDescription');
+            if (descEl) descEl.textContent = report.description || 'No description';
+            const addrEl = document.getElementById('reportDetailAddress');
+            if (addrEl) addrEl.textContent = report.address || 'No address';
+
+            const landmarkRow = document.getElementById('reportDetailLandmarkRow');
+            const landmarkEl = document.getElementById('reportDetailLandmark');
+            if (landmarkRow && landmarkEl) {
+                if (report.landmark) {
+                    landmarkEl.textContent = report.landmark;
+                    landmarkRow.style.display = 'flex';
+                } else {
+                    landmarkRow.style.display = 'none';
+                }
+            }
+
+    // Carousel state for proof images
+    let currentProofImages = [];
+    let currentProofImageIndex = 0;
+
+    function updateProofCarousel() {
+        const carouselImages = document.getElementById('reportDetailProofCarouselImages');
+        const counter = document.getElementById('reportDetailProofImageCounter');
+        const prevBtn = document.getElementById('reportDetailProofPrevBtn');
+        const nextBtn = document.getElementById('reportDetailProofNextBtn');
+        
+        if (carouselImages && currentProofImages.length > 0) {
+            carouselImages.innerHTML = `<img src="${currentProofImages[currentProofImageIndex]}" alt="Proof photo ${currentProofImageIndex + 1}" style="max-width: 100%; max-height: 100%; object-fit: contain; cursor: pointer;" onclick="window.open('${currentProofImages[currentProofImageIndex]}', '_blank')">`;
+        }
+        
+        if (counter) {
+            counter.textContent = `${currentProofImageIndex + 1} / ${currentProofImages.length}`;
+        }
+        
+        // Show/hide nav buttons based on position
+        if (prevBtn) prevBtn.style.display = currentProofImageIndex > 0 ? 'flex' : 'none';
+        if (nextBtn) nextBtn.style.display = currentProofImageIndex < currentProofImages.length - 1 ? 'flex' : 'none';
+    }
+
+    window.prevProofImage = function() {
+        if (currentProofImageIndex > 0) {
+            currentProofImageIndex--;
+            updateProofCarousel();
+        }
+    };
+
+    window.nextProofImage = function() {
+        if (currentProofImageIndex < currentProofImages.length - 1) {
+            currentProofImageIndex++;
+            updateProofCarousel();
+        }
+    };
+
+            // 2. Proof of Rescue - ONLY for report owner
+            const proofSection = document.getElementById('reportDetailProofSection');
+            const isCompleted = report.status === 'completed';
+            const isPendingCompletion = report.status === 'pending_completion';
+
+            if (proofSection) {
+                // Only show proof to the report owner for privacy
+                if (isMyReport && (isCompleted || isPendingCompletion) && (report.proof_image_url || (report.proof_image_urls && report.proof_image_urls.length > 0))) {
+                    proofSection.style.display = 'block';
+                    
+                    // Get all proof images
+                    currentProofImages = report.proof_image_urls && report.proof_image_urls.length > 0 
+                        ? report.proof_image_urls 
+                        : (report.proof_image_url ? [report.proof_image_url] : []);
+                    currentProofImageIndex = 0;
+                    
+                    const proofCarousel = document.getElementById('reportDetailProofCarousel');
+                    const proofImg = document.getElementById('reportDetailProofImage');
+                    const proofContainer = document.getElementById('reportDetailProofImageContainer');
+                    
+                    if (currentProofImages.length > 1) {
+                        // Multiple proof images - use carousel
+                        if (proofCarousel) {
+                            proofCarousel.style.display = 'block';
+                            updateProofCarousel();
+                        }
+                        if (proofContainer) proofContainer.style.display = 'none';
+                        if (proofImg) proofImg.style.display = 'none';
+                    } else if (currentProofImages.length === 1) {
+                        // Single proof image
+                        if (proofCarousel) proofCarousel.style.display = 'none';
+                        if (proofContainer) proofContainer.style.display = 'block';
+                        if (proofImg) {
+                            proofImg.src = currentProofImages[0];
+                            proofImg.style.display = 'block';
+                        }
+                    }
+                    
+                    const proofAddr = document.getElementById('reportDetailProofAddress');
+                    if (proofAddr) proofAddr.textContent = report.rescued_address || 'Geocoded Address Not Provided';
+                } else {
+                    proofSection.style.display = 'none';
+                }
+            }
+
+            // 3. Status-Specific Banners and Info (NOT dependent on fromHistory for visibility)
+            // Clean up old banners first
+            const existingBanners = ['rescueInProgressBanner', 'rescueCompletedBanner'];
+            existingBanners.forEach(id => {
+                const b = document.getElementById(id);
+                if (b) b.remove();
+            });
+
+            const proofSecAnchor = document.getElementById('reportDetailProofSection');
+            
+            if (report.status === 'waiting_for_user_approval' && report.assigned_rescuer_id) {
+                const identifierStr = `{'user_id': '${report.assigned_rescuer_id}'}`;
+                let bannerHtml = `<br><span style="margin-top: 10px; display: inline-block; font-size: 13px; color: #FF8C00;">A rescuer has requested to take this report. <a href="javascript:void(0)" onclick="openPublicProfileModal(${identifierStr})" style="font-weight: bold; text-decoration: underline; color: #FF8C00;">View Rescuer Profile</a></span>`;
+                if (reporterEl) reporterEl.innerHTML += bannerHtml;
+            }
+
+            if (report.status === 'in_progress' && report.assigned_rescuer_id && proofSecAnchor) {
+                const banner = document.createElement('div');
+                banner.id = 'rescueInProgressBanner';
+                banner.style.cssText = 'background: linear-gradient(135deg, #e8f4fd 0%, #d1ecf1 100%); border-left: 4px solid #17a2b8; padding: 14px 18px; border-radius: 8px; margin-top: 15px; display: flex; align-items: center; gap: 12px;';
+                banner.innerHTML = `<span style="font-size: 24px;">🐾</span><div><div style="font-size: 14px; font-weight: 600; color: #0c5460;">Rescue In Progress</div><div style="font-size: 13px; color: #17a2b8;" id="detailRescuerName">Loading rescuer info...</div></div>`;
+                proofSecAnchor.parentNode.insertBefore(banner, proofSecAnchor.nextSibling);
+                
+                fetch(`/api/profile/public/?user_id=${report.assigned_rescuer_id}`).then(r => r.json()).then(data => {
+                    const el = document.getElementById('detailRescuerName');
+                    if (el && data.success) {
+                        const name = data.profile.full_name || data.profile.username || 'Unknown';
+                        el.innerHTML = `<a href="javascript:void(0)" onclick="openPublicProfileModal({'user_id': '${report.assigned_rescuer_id}'})" style="color: #0c5460; font-weight: bold; text-decoration: underline; cursor: pointer;">${name}</a> is handling the rescue`;
+                    }
+                });
+            }
+
+            if (isPendingCompletion && report.assigned_rescuer_id && proofSecAnchor) {
+                const banner = document.createElement('div');
+                banner.id = 'rescueInProgressBanner';
+                banner.style.cssText = 'background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border-left: 4px solid #FF8C00; padding: 14px 18px; border-radius: 8px; margin-top: 15px; display: flex; align-items: center; gap: 12px;';
+                banner.innerHTML = `<span style="font-size: 24px;">📋</span><div><div style="font-size: 14px; font-weight: 600; color: #856404;">Proof of Rescue Submitted</div><div style="font-size: 13px; color: #856404;" id="detailRescuerNamePending">Loading rescuer info...</div></div>`;
+                proofSecAnchor.parentNode.insertBefore(banner, proofSecAnchor.nextSibling);
+                
+                fetch(`/api/profile/public/?user_id=${report.assigned_rescuer_id}`).then(r => r.json()).then(data => {
+                    const el = document.getElementById('detailRescuerNamePending');
+                    if (el && data.success) {
+                        const name = data.profile.full_name || data.profile.username || 'Unknown';
+                        el.innerHTML = `<a href="javascript:void(0)" onclick="openPublicProfileModal({'user_id': '${report.assigned_rescuer_id}'})" style="color: #856404; font-weight: bold; text-decoration: underline; cursor: pointer;">${name}</a> has submitted proof. Review required.`;
+                    }
+                });
+            }
+
+            if (isCompleted && report.assigned_rescuer_id && proofSecAnchor) {
+                const banner = document.createElement('div');
+                banner.id = 'rescueCompletedBanner';
+                banner.style.cssText = 'background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-left: 4px solid #28a745; padding: 14px 18px; border-radius: 8px; margin-top: 15px; display: flex; align-items: center; gap: 12px;';
+                banner.innerHTML = `<span style="font-size: 24px;">🏆</span><div><div style="font-size: 14px; font-weight: 600; color: #155724;">Rescue Completed</div><div style="font-size: 13px; color: #155724;" id="detailRescuerNameCompleted">Successfully rescued</div></div>`;
+                proofSecAnchor.parentNode.insertBefore(banner, proofSecAnchor.nextSibling);
+                
+                fetch(`/api/profile/public/?user_id=${report.assigned_rescuer_id}`).then(r => r.json()).then(data => {
+                    const el = document.getElementById('detailRescuerNameCompleted');
+                    if (el && data.success) {
+                        const name = data.profile.full_name || data.profile.username || 'Unknown';
+                        el.innerHTML = `Successfully rescued by <a href="javascript:void(0)" onclick="openPublicProfileModal({'user_id': '${report.assigned_rescuer_id}'})" style="color: #155724; font-weight: bold; text-decoration: underline; cursor: pointer;">${name}</a>`;
+                    }
+                });
+            }
+
+            // 4. Footer Actions - ONLY for user's own reports
+            const footer = document.getElementById('reportDetailFooter');
+            const isTrashed = report.is_deleted_by_user === true;
+            
+            if (footer) {
+                // If not the user's own report, only show Close button
+                if (!isMyReport) {
+                    footer.innerHTML = `<button class="custom-modal-btn secondary" onclick="closeReportDetailModal()">Close</button>`;
+                } else if (isTrashed) {
+                    footer.innerHTML = fromHistory ? 
+                        `<button class="custom-modal-btn secondary" onclick="closeReportDetailModal()">Close</button>` :
+                        `<button class="custom-modal-btn primary" onclick="closeReportDetailModal(); recoverReport('${report.id}')">Recover</button>
+                         <button class="custom-modal-btn danger" onclick="closeReportDetailModal(); permanentlyDeleteReport('${report.id}')">Delete Permanently</button>
+                         <button class="custom-modal-btn secondary" onclick="closeReportDetailModal()">Close</button>`;
+                } else if (fromHistory) {
+                    footer.innerHTML = `<button class="custom-modal-btn secondary" onclick="closeReportDetailModal()">Close</button>`;
+                } else if (report.status === 'waiting_for_user_approval') {
+                    footer.innerHTML = `<button class="custom-modal-btn secondary" onclick="closeReportDetailModal()">Close</button>
+                                       <button class="custom-modal-btn primary" onclick="closeReportDetailModal(); updateReportStatus('${report.id}', 'in_progress')">Approve Rescuer</button>
+                                       <button class="custom-modal-btn danger" onclick="closeReportDetailModal(); updateReportStatus('${report.id}', 'pending')">Decline</button>`;
+                } else if (isPendingCompletion) {
+                    footer.innerHTML = `<button class="custom-modal-btn secondary" onclick="closeReportDetailModal()">Close</button>
+                                       <button class="custom-modal-btn primary" onclick="closeReportDetailModal(); openRateRescuerModal('${report.id}')">✅ Approve Completion</button>
+                                       <button class="custom-modal-btn danger" onclick="closeReportDetailModal(); updateReportStatus('${report.id}', 'in_progress')">❌ Reject Proof</button>`;
+                } else {
+                    const canDelete = !['in_progress', 'pending_completion', 'completed'].includes(report.status);
+                    footer.innerHTML = `<button class="custom-modal-btn secondary" onclick="closeReportDetailModal()">Close</button>
+                        ${canDelete ? `<button class="custom-modal-btn danger" onclick="closeReportDetailModal(); trashReport('${report.id}')">Move to Trash</button>` : ''}
+                        ${isCompleted ? `<button class="custom-modal-btn danger" style="background: #6c757d; border-color: #6c757d;" onclick="closeReportDetailModal(); trashReport('${report.id}')">Move to Trash</button>` : ''}`;
+                }
+            }
+
+            // 5. Initialize Chat - ONLY for user's own reports with active/completed rescues
+            const chatSection = document.getElementById('reportDetailChatSection');
+            const chatStatuses = ['in_progress', 'pending_completion', 'waiting_for_user_approval', 'completed'];
+            
+            if (chatSection && isMyReport && chatStatuses.includes(report.status)) {
+                console.log("Showing chat section for user's report:", report.id);
+                chatSection.style.display = 'block';
+                currentChatReportId = report.id;
+                loadChatMessages(report.id);
+                
+                const input = document.getElementById('chatMessageInput');
+                const btn = document.getElementById('sendChatMessageBtn');
+                const chatInputArea = chatSection.querySelector('.chat-input-group');
+                
+                if (chatInputArea) chatInputArea.style.display = isCompleted ? 'none' : 'flex';
+                if (input) input.disabled = isCompleted;
+                if (btn) btn.disabled = isCompleted;
+
+                if (!isCompleted) {
+                    chatPollingInterval = setInterval(() => loadChatMessages(report.id), 5000);
+                }
+            } else if (chatSection) {
+                chatSection.style.display = 'none';
+            }
+
+            modal.style.display = 'flex';
+            modal.classList.add('active');
+
+        } catch (err) {
+            console.error('Error in openReportDetailModal:', err);
+            showCustomAlert('Error displaying report details. Check console.', 'Error');
+        }
+    }
+
+    function closeReportDetailModal() {
+        const modal = document.getElementById('reportDetailModal');
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+        
+        // Stop chat polling
+        if (chatPollingInterval) {
+            clearInterval(chatPollingInterval);
+            chatPollingInterval = null;
+        }
+        currentChatReportId = null;
+
+        // Clean up dynamically injected banners
+        const banner = document.getElementById('rescueInProgressBanner');
+        if (banner) banner.remove();
+        const compBanner = document.getElementById('rescueCompletedBanner');
+        if (compBanner) compBanner.remove();
+    }
+
+    function getStatusColor(status) {
+        switch (status) {
+            case 'pending': return '#ffc107';
+            case 'waiting_for_user_approval': return '#FF8C00';
+            case 'in_progress': return '#17a2b8';
+            case 'pending_completion': return '#e67e22';
+            case 'completed': return '#28a745';
+            case 'declined': return '#dc3545';
+            default: return '#6c757d';
+        }
+    }
+
+    // Chat Functions
+    async function loadChatMessages(reportId) {
+        if (!reportId) return;
+        
+        try {
+            const response = await fetch(`/api/reports/${reportId}/comments/`, {
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                renderChatMessages(result.comments);
+            }
+        } catch (error) {
+            console.error('Error loading chat messages:', error);
+        }
+    }
+
+    function renderChatMessages(comments) {
+        const container = document.getElementById('chatMessagesContainer');
+        if (!container) return;
+        
+        // Save scroll position
+        const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+        
+        if (!comments || comments.length === 0) {
+            container.innerHTML = '<div style="text-align: center; color: #999; font-size: 13px; margin-top: 20px;">No messages yet. Start the conversation!</div>';
+            return;
+        }
+        
+        const userCtx = (typeof currentProfile !== 'undefined' && currentProfile) ? currentProfile : (window.currentUserContext || { id: null });
+        
+        container.innerHTML = comments.map(msg => {
+            const isMe = msg.user_id === userCtx.id;
+            const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            return `
+                <div style="display: flex; flex-direction: column; align-items: ${isMe ? 'flex-end' : 'flex-start'}; gap: 4px; max-width: 85%; align-self: ${isMe ? 'flex-end' : 'flex-start'};">
+                    <div style="font-size: 11px; color: #666; margin-${isMe ? 'right' : 'left'}: 8px;">
+                        ${isMe ? 'You' : msg.user_name} • ${time}
+                    </div>
+                    <div style="background: ${isMe ? '#FF8C00' : '#fff'}; color: ${isMe ? '#fff' : '#333'}; padding: 10px 14px; border-radius: 15px; border-bottom-${isMe ? 'right' : 'left'}-radius: 2px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: ${isMe ? 'none' : '1px solid #e9ecef'}; word-break: break-word;">
+                        ${msg.comment}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Only scroll to bottom if user was already at bottom or if it's the first load
+        if (isAtBottom) {
+            container.scrollTop = container.scrollHeight;
+        }
+    }
+
+    async function sendChatMessage() {
+        const input = document.getElementById('chatMessageInput');
+        const btn = document.getElementById('sendChatMessageBtn');
+        const comment = input.value.trim();
+        const reportId = currentChatReportId;
+        
+        if (!comment || !reportId) return;
+        
+        input.value = '';
+        input.disabled = true;
+        btn.disabled = true;
+        
+        try {
+            const response = await fetch(`/api/reports/${reportId}/comments/create/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ comment: comment })
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                // Refresh messages immediately
+                await loadChatMessages(reportId);
+                const container = document.getElementById('chatMessagesContainer');
+                if (container) container.scrollTop = container.scrollHeight;
+            } else {
+                showCustomAlert('Failed to send message: ' + (result.error || 'Unknown error'), 'Error');
+                input.value = comment; // Restore input
+            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+            showCustomAlert('Error sending message. Please try again.', 'Error');
+            input.value = comment;
+        } finally {
+            input.disabled = false;
+            btn.disabled = false;
+            input.focus();
+        }
+    }
+
+    // Event listeners for chat input
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'sendChatMessageBtn' || (e.target.parentElement && e.target.parentElement.id === 'sendChatMessageBtn')) {
+            sendChatMessage();
+        }
+    });
+
+    document.addEventListener('keypress', function(e) {
+        if (e.target && e.target.id === 'chatMessageInput' && e.key === 'Enter') {
+            sendChatMessage();
+        }
+    });
+
+    async function updateReportStatus(reportId, newStatus) {
+        try {
+            const response = await fetch(`/api/reports/${reportId}/update/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showCustomAlert('Report status successfully updated!', 'Success');
+                if (typeof loadAllReports === 'function') {
+                    await loadAllReports();
+                }
+            } else {
+                showCustomAlert('Error updating report: ' + (result.error || 'Unknown error'), 'Error');
+            }
+        } catch (error) {
+            console.error('Error updating report:', error);
+            showCustomAlert('Error updating report. Please try again.', 'Error');
+        }
+    }
+
+    // Close report detail on backdrop click
+    document.getElementById('reportDetailModal').addEventListener('click', function (e) {
+        if (e.target === this) closeReportDetailModal();
+    });
+
+    // Profile Management Functions
+    let currentProfile = null;
+    let newProfilePhoto = null;
+
+    // Load profile on page load
+    document.addEventListener('DOMContentLoaded', async function () {
+        await loadUserProfile();
+    });
+
+    async function loadUserProfile() {
+        try {
+            const response = await fetch('/api/profile/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                currentProfile = result.profile;
+                // Update global context to prevent stale filters/data
+                if (window.currentUserContext) {
+                    window.currentUserContext.username = currentProfile.username;
+                    window.currentUserContext.full_name = currentProfile.full_name;
+                    window.currentUserContext.id = currentProfile.id;
+                }
+                updateMiniProfile(currentProfile);
+                updateProfileRatingBox(currentProfile);
+            }
+        } catch (error) {
+            console.error('Error loading profile:', error);
+        }
+    }
+
+    function updateMiniProfile(profile) {
+        const photoEl = document.getElementById('miniProfilePhoto');
+        const initialsEl = document.getElementById('miniProfileInitials');
+        const nameEl = document.getElementById('miniProfileName');
+        const bioEl = document.getElementById('miniProfileBio');
+
+        // Update photo
+        if (profile.profile_photo) {
+            photoEl.src = profile.profile_photo;
+            photoEl.style.display = 'block';
+            initialsEl.style.display = 'none';
+        } else {
+            photoEl.style.display = 'none';
+            initialsEl.style.display = 'flex';
+            initialsEl.textContent = getInitials(profile.full_name || profile.username);
+        }
+
+        // Update name and bio
+        nameEl.textContent = profile.full_name || profile.username;
+        bioEl.textContent = profile.bio || 'Click to edit profile';
+    }
+
+    function getInitials(name) {
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+
+    // Render star rating HTML given avg and count
+    function renderStarRating(avg, total) {
+        if (!avg || total === 0) return { stars: '\u2606\u2606\u2606\u2606\u2606', label: 'No ratings yet (as Reporter)' };
+        const filled = Math.round(avg);
+        const stars = '\u2605'.repeat(filled) + '\u2606'.repeat(5 - filled);
+        return { stars, label: `${avg} / 5 (${total} review${total !== 1 ? 's' : ''}) as Reporter` };
+    }
+
+    // Update reporter's My Rating box in profile modal
+    function updateProfileRatingBox(profile) {
+        const box = document.getElementById('reporterProfileRatingBox');
+        if (!box) return;
+        const avg = profile.avg_rating_as_reporter;
+        const count = profile.rating_count_as_reporter || 0;
+        const { stars, label } = renderStarRating(avg, count);
+        document.getElementById('reporterProfileRatingStars').textContent = stars;
+        document.getElementById('reporterProfileRatingValue').textContent = avg ? `${avg} / 5` : '\u2014';
+        document.getElementById('reporterProfileRatingLabel').textContent = label;
+    }
+
+    function openProfileModal() {
+        if (!currentProfile) return;
+
+        const modal = document.getElementById('profileModal');
+
+        // Populate form
+        document.getElementById('profileUsername').value = currentProfile.username;
+        document.getElementById('profileFullName').value = currentProfile.full_name || '';
+        document.getElementById('profileBio').value = currentProfile.bio || '';
+
+        // Set phone number (strip +63 prefix for input)
+        let phone = currentProfile.phone || '';
+        if (phone.startsWith('+63')) phone = phone.substring(3);
+        document.getElementById('profilePhone').value = phone;
+
+        // Update large photo
+        const photoLarge = document.getElementById('profilePhotoLarge');
+        const initialsLarge = document.getElementById('profileInitialsLarge');
+
+        if (currentProfile.profile_photo) {
+            photoLarge.src = currentProfile.profile_photo;
+            photoLarge.style.display = 'block';
+            initialsLarge.style.display = 'none';
+        } else {
+            photoLarge.style.display = 'none';
+            initialsLarge.style.display = 'flex';
+            initialsLarge.textContent = getInitials(currentProfile.full_name || currentProfile.username);
+        }
+
+        // Load rescue history
+        loadRescueHistory();
+
+
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+    }
+
+    function closeProfileModal() {
+        const modal = document.getElementById('profileModal');
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+        newProfilePhoto = null;
+    }
+
+
+
+    async function loadRescueHistory() {
+        try {
+            const response = await fetch('/api/profile/rescue-history/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                document.getElementById('rescueCount').textContent = result.count;
+
+                // Render rescue history list
+                const listEl = document.getElementById('rescueHistoryList');
+                if (result.rescues.length > 0) {
+                    listEl.innerHTML = '';
+                    result.rescues.slice(0, 5).forEach(rescue => {
+                        const div = document.createElement('div');
+                        div.style.cssText = "padding: 10px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: background 0.2s;";
+                        div.onmouseover = () => div.style.background = '#e9ecef';
+                        div.onmouseout = () => div.style.background = '#f8f9fa';
+                        div.onclick = (e) => {
+                            e.stopPropagation();
+                            closeProfileModal();
+                            if (typeof window.openReportDetailModal === 'function') {
+                                window.openReportDetailModal(rescue, true);
+                            }
+                        };
+                        
+                        const rescuerInfo = rescue.rescuer_name ? `<div style="font-size: 12px; color: #28a745; margin-top: 4px; font-weight: 500;">Rescued by: ${rescue.rescuer_name}</div>` : '';
+
+                        div.innerHTML = `
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="font-weight: 600; color: #2c3e50;">${rescue.animal_type} - ${rescue.animal_condition}</div>
+                                <div style="font-size: 12px; color: #6c757d;">${new Date(rescue.created_at).toLocaleDateString()}</div>
+                            </div>
+                            <div style="font-size: 13px; color: #6c757d; margin-top: 4px;">Location: ${rescue.address}</div>
+                            ${rescuerInfo}
+                            <div style="display: flex; align-items: center; margin-top: 8px;">
+                                <div style="color: #ffc107; margin-right: 8px;">${'★'.repeat(rescue.rating_by_reporter || 0)}${'☆'.repeat(5 - (rescue.rating_by_reporter || 0))}</div>
+                                <div style="font-size: 12px; color: #6c757d;">${rescue.feedback_by_reporter ? '"' + rescue.feedback_by_reporter + '"' : 'No feedback yet'}</div>
+                            </div>
+                        `;
+                        listEl.appendChild(div);
+                    });
+                } else {
+                    listEl.innerHTML = '<p style="color: #6c757d; text-align: center;">No completed rescues yet</p>';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading rescue history:', error);
+        }
+    }
+
+    // Profile photo upload
+    document.getElementById('profilePhotoInput').addEventListener('change', async function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Convert to base64
+        const reader = new FileReader();
+        reader.onload = async function (event) {
+            const base64 = event.target.result;
+
+            // Upload to server
+            try {
+                const response = await fetch('/api/upload-image/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        image_data: base64,
+                        file_name: file.name
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    newProfilePhoto = result.url;
+
+                    // Update preview
+                    const photoLarge = document.getElementById('profilePhotoLarge');
+                    const initialsLarge = document.getElementById('profileInitialsLarge');
+                    photoLarge.src = result.url;
+                    photoLarge.style.display = 'block';
+                    initialsLarge.style.display = 'none';
+                } else {
+                    showCustomAlert('Failed to upload photo: ' + result.error, 'Error');
+                }
+            } catch (error) {
+                console.error('Error uploading photo:', error);
+                showCustomAlert('Error uploading photo', 'Error');
+            }
+        };
+        reader.readAsDataURL(file);
+    });
+
+    function removeProfilePhoto() {
+        newProfilePhoto = '';
+        const photoLarge = document.getElementById('profilePhotoLarge');
+        const initialsLarge = document.getElementById('profileInitialsLarge');
+        photoLarge.style.display = 'none';
+        initialsLarge.style.display = 'flex';
+        initialsLarge.textContent = getInitials(document.getElementById('profileFullName').value || currentProfile.username);
+    }
+
+    async function saveProfile() {
+        const fullName = document.getElementById('profileFullName').value;
+        const bio = document.getElementById('profileBio').value;
+        const username = document.getElementById('profileUsername').value;
+
+        if (!fullName || !username) {
+            showCustomAlert('Please enter both your full name and username.', 'Input Error');
+            return;
+        }
+
+
+        // Update profile
+        const phoneRaw = document.getElementById('profilePhone').value;
+        const phone = phoneRaw ? phoneRaw.trim() : null;
+
+        const updateData = {
+            full_name: fullName,
+            username: username,
+            bio: bio,
+            phone: phone
+        };
+
+        if (newProfilePhoto !== null) {
+            updateData.profile_photo = newProfilePhoto;
+        }
+
+        try {
+            const response = await fetch('/api/profile/update/', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(updateData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                currentProfile = result.profile;
+                updateMiniProfile(currentProfile);
+
+                const message = 'Profile updated successfully!';
+                showCustomAlert(message, 'Success');
+                closeProfileModal();
+            } else {
+                showCustomAlert('Failed to update profile: ' + result.error, 'Error');
+            }
+        } catch (error) {
+            console.error('Error saving profile:', error);
+            showCustomAlert('Error saving profile', 'Error');
+        }
+    }
+
+    // Close profile modal on backdrop click
+    document.getElementById('profileModal').addEventListener('click', function (e) {
+        if (e.target === this) closeProfileModal();
+    });
+
+    let currentRatingReportId = null;
+
+    window.openRateRescuerModal = function(reportId) {
+        currentRatingReportId = reportId;
+        document.getElementById('userToRescuerRatingValue').value = "0";
+        document.getElementById('userToRescuerFeedback').value = "";
+        const stars = document.getElementById('userRatingStars').children;
+        for (let i = 0; i < stars.length; i++) {
+            stars[i].style.color = '#ddd';
+        }
+        
+        const modal = document.getElementById('rateRescuerModal');
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+    };
+
+    window.closeRateRescuerModal = function() {
+        const modal = document.getElementById('rateRescuerModal');
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+        currentRatingReportId = null;
+    };
+
+    window.setUserToRescuerRating = function(rating) {
+        document.getElementById('userToRescuerRatingValue').value = rating;
+        const stars = document.getElementById('userRatingStars').children;
+        for (let i = 0; i < stars.length; i++) {
+            if (i < rating) {
+                stars[i].style.color = '#FF8C00';
+            } else {
+                stars[i].style.color = '#ddd';
+            }
+        }
+    };
+
+    window.submitRescuerRating = async function() {
+        if (!currentRatingReportId) return;
+        
+        const rating = parseInt(document.getElementById('userToRescuerRatingValue').value) || 0;
+        const feedback = document.getElementById('userToRescuerFeedback').value.trim();
+        
+        // Rating is REQUIRED
+        const ratingErrorEl = document.getElementById('userRatingError');
+        if (rating < 1 || rating > 5) {
+            if (ratingErrorEl) ratingErrorEl.style.display = 'block';
+            document.getElementById('userRatingStars').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            showCustomAlert('Please rate the rescuer before approving.', 'Rating Required');
+            return;
+        }
+        if (ratingErrorEl) ratingErrorEl.style.display = 'none';
+        
+        const submitBtn = document.getElementById('submitRatingBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting...';
+        
+        try {
+            const updatePayload = { status: 'completed' };
+            if (rating > 0) {
+                updatePayload.user_to_rescuer_rating = rating;
+                updatePayload.user_to_rescuer_feedback = feedback;
+            }
+            
+            const response = await fetch(`/api/reports/${currentRatingReportId}/update/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(updatePayload)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showCustomAlert('Report completed and rating submitted!', 'Success');
+                closeRateRescuerModal();
+                if (typeof loadAllReports === 'function') {
+                    await loadAllReports();
+                } else if (typeof updateReportStateLocally === 'function') {
+                    // Update frontend state immediately if loadAllReports doesn't exist
+                    updateReportStateLocally(currentRatingReportId, {status: 'completed'});
+                    // Find some way to refresh UI
+                    location.reload(); 
+                } else {
+                    location.reload();
+                }
+            } else {
+                showCustomAlert('Error updating report: ' + (result.error || 'Unknown error'), 'Error');
+            }
+        } catch (error) {
+            console.error('Error submitting rating:', error);
+            showCustomAlert('Error submitting rating. Please try again.', 'Error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit & Approve';
+        }
+    };
+
+
+
+    // Check for success message in URL
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('auth_success') === 'true') {
+            setTimeout(() => {
+                showCustomAlert('Email verified and logged in successfully! Welcome to BantayBuntot.', 'Success');
+            }, 500);
+            // Clean up URL
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+        }
+    });
+</script>
+{% endblock %}

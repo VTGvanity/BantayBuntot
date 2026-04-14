@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register - BantayBuntot{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <!-- Header Section -->
+        <div class="login-header">
+            <div class="logo-section">
+                <h1 class="app-title" style="display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 0;">
+                    <img src="{% static 'images/iicon.png' %}" alt="" style="height: 130px; width: auto;">
+                    <img src="{% static 'images/iiicon.png' %}" alt="" style="height: 200px; width: auto;">
+                </h1>
+                <p class="app-subtitle">Stray Animal Tracking & Reporting</p>
+            </div>
+        </div>
+
+        <!-- Role Toggle -->
+        <div class="role-toggle">
+            <div class="toggle-container">
+                <button type="button" class="toggle-btn active" data-role="user">User</button>
+                <button type="button" class="toggle-btn" data-role="rescuer">Rescuer</button>
+            </div>
+        </div>
+
+        <!-- Registration Form -->
+        <div class="login-form">
+            <h2 class="form-title" id="form-title">User Registration</h2>
+            <p class="form-description" id="form-description">Join us in helping stray animals in your community</p>
+            
+            <form method="post" id="register-form">
+                {% csrf_token %}
+                
+                <!-- Hidden field for user type that will be updated by JavaScript -->
+                <input type="hidden" name="user_type" id="id_user_type" value="user">
+                <!-- CAPTCHA token -->
+                <input type="hidden" name="captcha_token" id="captcha_token">
+                
+                <div class="form-group">
+                    <label for="id_full_name">Full Name</label>
+                    <input type="text" name="full_name" id="id_full_name" placeholder="Juan Dela Cruz" required>
+                    {% if form.full_name.errors %}
+                        <div class="error-message">{{ form.full_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_username">Username</label>
+                    <input type="text" name="username" id="id_username" placeholder="juan_rescuer" required>
+                    <div id="username-error" class="validation-message" style="color: #dc3545; font-size: 12px; margin-top: 4px; display: none;"></div>
+                    {% if form.username.errors %}
+                        <div class="error-message">{{ form.username.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_email">Email Address</label>
+                    <input type="email" name="email" id="id_email" placeholder="user@example.com" required>
+                    <div id="email-error" class="validation-message" style="color: #dc3545; font-size: 12px; margin-top: 4px; display: none;"></div>
+                    {% if form.email.errors %}
+                        <div class="error-message">{{ form.email.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_phone">Contact Number (10 digits)</label>
+                    <div class="phone-input-container" style="display: flex; gap: 8px; align-items: center;">
+                        <span style="background: #f0f0f0; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-weight: 600;">+63</span>
+                        <input type="tel" name="phone" id="id_phone" pattern="[0-9]{10}" maxlength="10" title="Please enter 10 digits" style="flex: 1;" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+                    <div id="phone-error" class="validation-message" style="color: #dc3545; font-size: 12px; margin-top: 4px; display: none;"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password1">Password</label>
+                    <div class="password-input-container">
+                        <input type="password" name="password1" id="id_password1" placeholder="Create a password" required>
+                        <button type="button" class="password-toggle" data-target="id_password1">
+                            <i class="eye-icon">👁️</i>
+                        </button>
+                    </div>
+                    <div class="password-requirements">
+                        <small>Must be at least 8 characters with uppercase, lowercase, numbers, and special characters</small>
+                    </div>
+                    {% if form.password1.errors %}
+                        <div class="error-message">{{ form.password1.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password2">Confirm Password</label>
+                    <div class="password-input-container">
+                        <input type="password" name="password2" id="id_password2" placeholder="Confirm your password" required>
+                        <button type="button" class="password-toggle" data-target="id_password2">
+                            <i class="eye-icon">👁️</i>
+                        </button>
+                    </div>
+                    {% if form.password2.errors %}
+                        <div class="error-message">{{ form.password2.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                {% if recaptcha_enabled %}
+                <!-- STRIDE: DoS/SPOOFING Protection - reCAPTCHA v2 Checkbox -->
+                <div class="form-group" style="display: flex; justify-content: center; margin: 15px 0;">
+                    <div id="recaptcha-container"></div>
+                </div>
+                {% endif %}
+                
+                <button type="submit" class="login-btn" id="register-btn">Register as User</button>
+                
+                <div class="divider">OR</div>
+                
+                <a href="{% url 'google_login' %}" class="google-login-btn">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                    Continue with Google
+                </a>
+            </form>
+            
+            <div class="form-footer">
+                <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+                <p><a href="{% url 'login' %}">← Back to Login</a></p>
+            </div>
+            
+            {% if recaptcha_enabled %}
+            <!-- STRIDE: DoS/SPOOFING Protection - reCAPTCHA v3 Badge -->
+            <div class="recaptcha-badge" style="margin-top: 15px; font-size: 12px; color: #666; text-align: center;">
+                <p>🔒 Protected by Google reCAPTCHA v3</p>
+                <p><a href="https://policies.google.com/privacy" target="_blank">Privacy</a> - 
+                   <a href="https://policies.google.com/terms" target="_blank">Terms</a></p>
+            </div>
+            {% endif %}
+            
+            <!-- Loading Overlay -->
+            <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Creating your account...</p>
+                </div>
+            </div>
+            
+            <!-- Success Modal -->
+            <div class="modal-overlay" id="successModal" style="display: none;">
+                <div class="modal success-modal">
+                    <div class="modal-header">
+                        <h2>✅ Registration Successful!</h2>
+                    </div>
+                    <div class="modal-body">
+                        <p style="font-weight: 600; color: #1e293b;">Your account has been created!</p>
+                        <p style="color: #64748b; margin-bottom: 20px;">We've sent a verification link to your email. You must confirm your email before you can log in.</p>
+                        <button class="login-btn" id="successModalBtn">Understood, Go to Login</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Error Modal -->
+            <div class="modal-overlay" id="errorModal" style="display: none;">
+                <div class="modal error-modal">
+                    <div class="modal-header">
+                        <h2>❌ Registration Failed</h2>
+                        <button class="close-btn" id="closeErrorModal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="errorMessage">There was an error creating your account.</p>
+                        <button class="secondary-btn" id="errorModalBtn">Try Again</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if recaptcha_enabled %}
+<!-- STRIDE: DoS/SPOOFING Protection - Google reCAPTCHA v2 -->
+<script>
+    // Track if reCAPTCHA is already rendered
+    window.recaptchaWidgetId = null;
+    
+    // Global callback function for reCAPTCHA - always renders fresh
+    function renderRecaptcha() {
+        var container = document.getElementById('recaptcha-container');
+        if (!container) return;
+        
+        // Check if already rendered (has iframe child)
+        if (container.querySelector('iframe')) {
+            return; // Already rendered, skip
+        }
+        
+        if (typeof grecaptcha !== 'undefined' && grecaptcha.render) {
+            // Render fresh widget
+            window.recaptchaWidgetId = grecaptcha.render('recaptcha-container', {
+                'sitekey': '{{ recaptcha_site_key }}'
+            });
+        }
+    }
+    
+    // Try to render when page loads
+    window.addEventListener('load', function() {
+        // Small delay to let reCAPTCHA script fully load
+        setTimeout(renderRecaptcha, 100);
+    });
+</script>
+<script src="https://www.google.com/recaptcha/api.js?onload=renderRecaptcha&render=explicit" async defer></script>
+{% endif %}
+<script src="{% static 'js/auth_utils.js' %}"></script>
+<script src="{% static 'js/register.js' %}"></script>
+{% endblock %}

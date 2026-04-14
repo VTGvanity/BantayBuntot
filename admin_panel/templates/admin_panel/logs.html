@@ -1,0 +1,255 @@
+{% extends 'admin_panel/layout.html' %}
+
+{% block page_title %}System Logs{% endblock %}
+
+{% block extra_css %}
+<style>
+    .log-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .log-tab {
+        padding: 12px 24px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+    
+    .log-tab.active {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .log-tab:not(.active) {
+        background: white;
+        color: var(--text-main);
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .log-tab:not(.active):hover {
+        background: var(--bg-body);
+    }
+    
+    .log-tab i {
+        font-size: 14px;
+    }
+    
+    .file-info {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .file-stat {
+        background: white;
+        padding: 15px 25px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .file-stat i {
+        color: var(--primary);
+        font-size: 18px;
+    }
+    
+    .file-stat .size {
+        font-weight: 600;
+        color: var(--text-main);
+    }
+    
+    .file-stat .label {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+    
+    .log-container {
+        background: #1a1a2e;
+        border-radius: 12px;
+        padding: 20px;
+        font-family: 'Monaco', 'Consolas', monospace;
+        font-size: 12px;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    
+    .log-entry {
+        color: #e0e0e0;
+        line-height: 1.6;
+        padding: 2px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .log-entry:last-child {
+        border-bottom: none;
+    }
+    
+    .log-entry .timestamp {
+        color: #888;
+    }
+    
+    .log-entry .level-info {
+        color: #4fc3f7;
+    }
+    
+    .log-entry .level-warning {
+        color: #ffb74d;
+    }
+    
+    .log-entry .level-error {
+        color: #e57373;
+    }
+    
+    .log-entry .level-audit {
+        color: #81c784;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-muted);
+    }
+    
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 20px;
+        color: var(--primary);
+    }
+    
+    .error-state {
+        text-align: center;
+        padding: 40px;
+        color: var(--danger);
+    }
+    
+    .controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .lines-selector {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .lines-selector select {
+        padding: 8px 15px;
+        border-radius: 8px;
+        border: 1px solid rgba(0,0,0,0.1);
+        font-family: inherit;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="log-tabs">
+        <a href="{% url 'admin_panel:logs' %}?type=application&lines={{ lines }}" class="log-tab {% if log_type == 'application' %}active{% endif %}">
+            <i class="fas fa-file-alt"></i>
+            <span>Application Logs</span>
+        </a>
+        <a href="{% url 'admin_panel:logs' %}?type=audit&lines={{ lines }}" class="log-tab {% if log_type == 'audit' %}active{% endif %}">
+            <i class="fas fa-shield-alt"></i>
+            <span>Audit Logs</span>
+        </a>
+        <a href="{% url 'admin_panel:logs' %}?type=error&lines={{ lines }}" class="log-tab {% if log_type == 'error' %}active{% endif %}">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Error Logs</span>
+        </a>
+    </div>
+    
+    <div class="file-info">
+        <div class="file-stat">
+            <i class="fas fa-file"></i>
+            <div>
+                <div class="label">Application</div>
+                <div class="size">{{ file_stats.application.size }}</div>
+            </div>
+        </div>
+        <div class="file-stat">
+            <i class="fas fa-shield-alt"></i>
+            <div>
+                <div class="label">Audit</div>
+                <div class="size">{{ file_stats.audit.size }}</div>
+            </div>
+        </div>
+        <div class="file-stat">
+            <i class="fas fa-exclamation-circle"></i>
+            <div>
+                <div class="label">Errors</div>
+                <div class="size">{{ file_stats.error.size }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <div class="lines-selector">
+            <label>Show last:</label>
+            <select onchange="changeLines(this.value)">
+                <option value="100" {% if lines == 100 %}selected{% endif %}>100 lines</option>
+                <option value="500" {% if lines == 500 %}selected{% endif %}>500 lines</option>
+                <option value="1000" {% if lines == 1000 %}selected{% endif %}>1000 lines</option>
+                <option value="5000" {% if lines == 5000 %}selected{% endif %}>5000 lines</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" onclick="refreshLogs()">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+    </div>
+    
+    {% if error_message %}
+    <div class="error-state">
+        <i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 15px;"></i>
+        <h3>Error Loading Logs</h3>
+        <p>{{ error_message }}</p>
+    </div>
+    {% elif log_content %}
+    <div class="log-container" id="logContainer">
+        {% for line in log_content %}
+        <div class="log-entry">
+            {{ line|safe }}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-file-alt"></i>
+        <h3>No Logs Available</h3>
+        <p>The log file is empty or does not exist yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function changeLines(value) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lines', value);
+        window.location.href = url.toString();
+    }
+    
+    function refreshLogs() {
+        window.location.reload();
+    }
+    
+    // Auto-scroll to bottom on load
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('logContainer');
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+    });
+</script>
+{% endblock %}

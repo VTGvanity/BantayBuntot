@@ -1,0 +1,141 @@
+{% extends 'admin_panel/layout.html' %}
+
+{% block page_title %}User Management{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-top: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <div>
+            <h3 style="font-weight: 700;">Global Users List</h3>
+            <p style="color: var(--text-muted); font-size: 14px;">Monitor and manage all registered accounts</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="userSearch" placeholder="Search Users..." style="padding: 10px 16px; border-radius: 12px; border: 1.5px solid var(--bg-body); font-size: 14px; width: 250px;">
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Type</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="usersTableBody">
+                {% for user in users %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ user.username }}" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%;">
+                            <span style="font-weight: 600;">{{ user.full_name }}</span>
+                        </div>
+                    </td>
+                    <td>@{{ user.username }}</td>
+                    <td style="color: var(--text-muted);">{{ user.email }}</td>
+                    <td>
+                        <span class="badge {% if user.user_type == 'rescuer' %}badge-in_progress{% else %}badge-pending{% endif %}">
+                            {{ user.user_type|upper }}
+                        </span>
+                    </td>
+                    <td style="font-size: 13px;">{{ user.created_at|slice:":10" }}</td>
+                    <td>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-outline" style="padding: 6px 14px; font-size: 12px;" onclick="toggleUserType('{{ user.id }}', '{{ user.user_type }}')">
+                                Switch to {% if user.user_type == 'rescuer' %}User{% else %}Rescuer{% endif %}
+                            </button>
+                            <button class="btn btn-danger" style="padding: 6px 14px; font-size: 12px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer;" onclick="deleteUser('{{ user.id }}', '{{ user.full_name|escapejs }}')">
+                                <i class="fas fa-trash-alt"></i> Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">No users found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function toggleUserType(userId, currentType) {
+        const newType = currentType === 'rescuer' ? 'user' : 'rescuer';
+        if (!confirm(`Are you sure you want to change this user to a ${newType}?`)) return;
+
+        try {
+            const response = await fetch('{% url "admin_panel:api_update_user" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    id: userId,
+                    update_data: { user_type: newType }
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + (result.error || 'Failed to update user'));
+            }
+        } catch (error) {
+            console.error('Update failed:', error);
+            alert('A network error occurred.');
+        }
+    }
+
+    async function deleteUser(userId, userName) {
+        if (!confirm(`WARNING: This action cannot be undone.\n\nAre you sure you want to delete user "${userName}"?\n\nAll their reports and data will be permanently removed.`)) return;
+
+        try {
+            const response = await fetch('{% url "admin_panel:api_delete_user" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    id: userId
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                // Remove the row from the table without reloading
+                const row = document.querySelector(`button[onclick*="deleteUser('${userId}'"]`).closest('tr');
+                row.style.transition = 'opacity 0.3s ease';
+                row.style.opacity = '0';
+                setTimeout(() => row.remove(), 300);
+                alert('User deleted successfully');
+            } else {
+                alert('Error: ' + (result.error || 'Failed to delete user'));
+            }
+        } catch (error) {
+            console.error('Delete failed:', error);
+            alert('A network error occurred.');
+        }
+    }
+
+    // Simple search filter
+    document.getElementById('userSearch').addEventListener('input', function(e) {
+        const term = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#usersTableBody tr');
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(term) ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}

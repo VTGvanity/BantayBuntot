@@ -1,0 +1,17 @@
+[
+  {
+    "id": "50f5d645-e6e6-47c8-931e-e343245166d3",
+    "image_url": "https://example.com/image.jpg",
+    "images": null
+  },
+  {
+    "id": "9fced149-a4f7-4d55-b6bb-f38b1a0bbfbb",
+    "image_url": "https://example.com/image.jpg",
+    "images": null
+  },
+  {
+    "id": "189330b2-758d-43e1-a40b-713549c3b00a",
+    "image_url": null,
+    "images": null
+  }
+]

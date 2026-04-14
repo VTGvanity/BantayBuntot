@@ -1,0 +1,11 @@
+Django>=4.2.0
+supabase>=2.0.0
+python-dotenv>=1.0.0
+Pillow>=10.0.0
+django-cors-headers>=4.0.0
+djangorestframework>=3.14.0
+psycopg2-binary>=2.9.0
+django-ratelimit>=4.1.0
+django-recaptcha>=4.0.0
+django-csp>=3.8.0
+dj-database-url>=2.1.0
