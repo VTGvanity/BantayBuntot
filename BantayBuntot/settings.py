@@ -237,7 +237,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB max file upload
 # Supabase Storage Settings
 SUPABASE_STORAGE_BUCKET = 'animal-images'
 
-# Logging Configuration
+# Logging Configuration - Using Console only for Vercel
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -246,69 +246,25 @@ LOGGING = {
             'format': '{asctime} [{levelname}] {name}: {message}',
             'style': '{',
         },
-        'audit': {
-            'format': '{asctime} [AUDIT] {name} | User: {user} | Action: {action} | Details: {message}',
-            'style': '{',
-        },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
-        'file': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'application.log',
-            'maxBytes': 10 * 1024 * 1024,  # 10MB
-            'backupCount': 5,
-            'formatter': 'verbose',
-        },
-        'audit_file': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'audit.log',
-            'maxBytes': 10 * 1024 * 1024,  # 10MB
-            'backupCount': 10,
-            'formatter': 'verbose',
-        },
-        'error_file': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'error.log',
-            'maxBytes': 10 * 1024 * 1024,  # 10MB
-            'backupCount': 5,
-            'formatter': 'verbose',
-            'level': 'ERROR',
-        },
     },
     'root': {
-        'handlers': ['console', 'file'],
+        'handlers': ['console'],
         'level': 'INFO',
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'audit': {
-            'handlers': ['console', 'audit_file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'security': {
-            'handlers': ['console', 'audit_file', 'error_file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'BantayBuntot': {
-            'handlers': ['console', 'file', 'error_file'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
         },
     },
 }
-
-# Ensure logs directory exists
-os.makedirs(BASE_DIR / 'logs', exist_ok=True)
 
 # STRIDE: Repudiation - Immutable Audit Log Settings
 AUDIT_LOG_IMMUTABLE = True
